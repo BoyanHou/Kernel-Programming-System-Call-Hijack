@@ -1,9 +1,17 @@
 ifeq ($(KERNELRELEASE),)  
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build 
-PWD := $(shell pwd)  
+PWD := $(shell pwd)
+
+CC=gcc
+CFLAGS= -O0 -ggdb -g -Werror -Wall -pedantic -fPIC
 
 .PHONY: build clean  
+
+all: build sneaky_process
+
+sneaky_process: sneaky_process.c
+	$(CC) $(CFLAGS) -o $@ $<
 
 build:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules  
