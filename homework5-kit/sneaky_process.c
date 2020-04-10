@@ -12,6 +12,7 @@ int main() {
   int ctn = 1;
   while (ctn) {
     getline(&line, &size, stdin);
+    printf("%s", line);
     if (strcmp(line, "q") == 0) {
       ctn = 0;
     } else {
