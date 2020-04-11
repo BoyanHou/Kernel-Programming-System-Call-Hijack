@@ -4,7 +4,7 @@ KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
 CC=gcc
-CFLAGS= -O0 -ggdb -g -Werror -Wall -pedantic -fPIC
+CFLAGS= -std=c99 -O0 -ggdb -g -Werror -Wall -pedantic -fPIC
 
 .PHONY: build clean  
 
