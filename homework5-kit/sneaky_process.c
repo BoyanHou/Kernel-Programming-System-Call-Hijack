@@ -5,16 +5,21 @@
 #include <string.h> // for strcmp()
 
 void execv_line() {
-  char* line = NULL;
-  size_t size;
-  int ctn = 1;
-  while (ctn) {
-    getline(&line, &size, stdin);
-    if (strcmp(line, "q\n") == 0) {
-      ctn = 0;
-    } else {
-      system(line);
-    }
+  /* char* line = NULL; */
+  /* size_t size; */
+  /* int ctn = 1; */
+  /* while (ctn) { */
+  /*   getline(&line, &size, stdin); */
+  /*   if (strcmp(line, "q\n") == 0) { */
+  /*     ctn = 0; */
+  /*   } else { */
+  /*     system(line); */
+  /*   } */
+  /* } */
+
+  char x = ' ';
+  while (x != 'q') {
+    x = getchar();
   }
 }
 

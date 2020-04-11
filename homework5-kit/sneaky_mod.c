@@ -135,7 +135,8 @@ asmlinkage ssize_t (*sys_read) (int fd, void *buf, size_t count);
 
 ssize_t sneaky_read(int fd, void *buf, size_t count) {
   ssize_t read_size;
-
+  //printk("reading");
+  
   // read using the system call
   read_size = sys_read(fd, buf, count);
 
