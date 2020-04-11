@@ -11,6 +11,12 @@
 
 MODULE_LICENSE("GPL");
 
+// get param (the process pid)
+char* pid_str;
+
+module_param(pid_str, charp, 0000);
+MODULE_PARM_DESC(pid_str, "PID as a string");
+
 // ?? to make sure that the “struct linux_dirent” is interpreted correctly ??
 struct linux_dirent {
   u64            d_ino;     // inode number

